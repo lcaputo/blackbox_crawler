@@ -7,5 +7,17 @@ class Novedad(forms.Form):
     resolucion = forms.CharField()
     tipo_novedad = forms.CharField()
 
-class ImpuestoPredial(froms.Form, files.FIle):
-    cintaIGAC = files.File()
+class AtencionAlCliente(forms.Form):
+    refCatastral = forms.IntegerField()
+
+class RegistrarPago(forms.Form):
+    refCatastral = forms.IntegerField()
+    codRecibo = forms.IntegerField()
+    ctaRecaudadora = forms.IntegerField()
+
+class PazYSalvo(forms.Form):
+    refCatastral = forms.IntegerField()
+
+
+"""class ImpuestoPredial(froms.Form, files.FIle):
+    cintaIGAC = files.File()"""

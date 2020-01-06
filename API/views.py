@@ -12,7 +12,7 @@ import json
 from blackbox_crawler import controller
 
 # Model
-from .models import Novedad,ImpuestoPredial
+from .models import Novedad, AtencionAlCliente, RegistrarPago, PazYSalvo
 
 # Create your views here.
 """ LOGIN """
@@ -35,14 +35,46 @@ def elaborarNovedad(request):
 
 
 @csrf_exempt
-def liquidacionImpuestoPredial(request):
+def ordenPago(request):
     if request.method == 'POST':
-        controller.Actions.goToLiquidacionImpuestoPredial()
-        form = ImpuestoPredial(request.POST)
+        controller.Actions.goToAtencionAlCliente()
+        form = AtencionAlCliente(request.POST)
         data = {}
         if not form.is_valid():
             data['error'] = 'error faltan datos'
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
         else:
-            data[''] = request.POST['']
+            data['refCatastral'] = request.POST['refCatastral']
+            controller.AtencionAlCliente.reciboDePago(data['refCatastral'])
+            return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+
+@csrf_exempt
+def registrarPago(request):
+    if request.method == 'POST':
+        controller.Actions.goToAtencionAlCliente()
+        form = RegistrarPago(request.POST)
+        data = {}
+        if not form.is_valid():
+            data['error'] = 'error faltan datos'
+            return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+        else:
+            data['refCatastral'] = request.POST['refCatastral']
+            data['codRecibo'] = request.POST['codRecibo']
+            data['ctaRecaudadora'] = request.POST['ctaRecaudadora']
+            controller.AtencionAlCliente.registrarPago(data['refCatastral'], data['codRecibo'], data['ctaRecaudadora'])
+            return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+
+
+@csrf_exempt
+def pazYSalvo(request):
+    if request.method == 'POST':
+        controller.Actions.goToAtencionAlCliente()
+        form = PazYSalvo(request.POST)
+        data = {}
+        if not form.is_valid():
+            data['error'] = 'error faltan datos'
+            return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+        else:
+            data['refCatastral'] = request.POST['refCatastral']
+            controller.AtencionAlCliente.pazYSalvo(data['refCatastral'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
