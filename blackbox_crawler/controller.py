@@ -1,22 +1,19 @@
-import os, time
-import platform
+import os, time, json
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-
+import requests, logging, threading
 
 _URL = 'http://192.168.0.250/'
 #downloadFolder = r''+os.getcwd()+'\Downloads\\'
 
+logging.basicConfig( level=logging.DEBUG, format="%(threadName)s|%(message)s" )
+
+
 class Page():
 
-    def conn():
-
+    def conn(municipio, accion=''):
         chromeDriver = ChromeDriverManager().install()
-
         # CONFIG WEBDRIVER OPTIONS
         options = webdriver.ChromeOptions()
         options.add_argument("--disable-infobars")
@@ -24,7 +21,7 @@ class Page():
         options.add_argument("--no-referrers")
         options.add_argument("--disable-popup-blocking")
         # OCULTAR NAVEGADOR
-        # options.add_argument("--headless")
+        options.add_argument("--headless")
         prefs = {
             #"download.default_directory": downloadFolder,
             "download.prompt_for_download": False,
@@ -46,13 +43,22 @@ class Page():
         options.add_experimental_option('prefs', prefs)
 
         driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=options)
-        #driver.get(_URL)
-        time.sleep(1)
+        driver.implicitly_wait(10)
+        driver.get(_URL+municipio)
+        Page.login(driver)
+        #driver.delete_all_cookies()
+        #cookie = {'name': 'ASP.NET_SessionId', 'value': Page.login(municipio)}
+        #driver.add_cookie(cookie)
         return driver
 
 
-    def login():
-        time.sleep(4)
+    def login(driver):
+        #payload = {'vUSERNICK': 'ADMINCS3', 'vUSERPASS': '18968934!', 'vVGFCOD': '2020', 'GXState': '{"_EventName":"EENTER.","_EventGridId":"","_EventRowId":"","vSWITTITULO1":"","vSWITTITULO2":"","GXFIELDHANDLER1_Control":"vUSERPASS","SCAMESSAGE1_Messagetype":"dialog","GXFIELDHANDLER1_Keycode":"","GX_FocusControl":"vSWITTITULO1","GX_AJAX_KEY":"2095BCCA5EEC7630D4A79BE44EE42942","AJAX_SECURITY_TOKEN":"B8284BEA03BEC307EE7F21FFD4A1CB55AB4790D15DE3CB0237EB74FE92236ADC","GX_CMP_OBJS":{},"sCallerURL":"'+_URL+municipio+'/bienvenido.aspx","GX_RES_PROVIDER":"GXResourceProvider.aspx","GX_THEME":"TemaAzul","_MODE":"","Mode":"","IsModified":"1","SCAMESSAGE1_Width":"312","SCAMESSAGE1_Height":"62","SCAMESSAGE1_Animationtype":"show","SCAMESSAGE1_Visible":1,"GXBALLOON1_Width":"100","GXBALLOON1_Height":"100","GXBALLOON1_Maxwidth":400,"GXBALLOON1_Delay":0,"GXBALLOON1_Position":"right","GXBALLOON1_Offset":2,"GXBALLOON1_Keepalive":0,"GXBALLOON1_Timetolive":2000,"GXBALLOON1_Visible":1,"WIJMODATEPICKER1_Width":"100","WIJMODATEPICKER1_Height":"100","WIJMODATEPICKER1_Culture":"es-MX","WIJMODATEPICKER1_Visible":1,"CS3NOMOUSEUP1_Width":"100","CS3NOMOUSEUP1_Height":"100","CS3NOMOUSEUP1_Visible":1,"GXPLACEHOLDER1_Width":"100","GXPLACEHOLDER1_Height":"100","GXPLACEHOLDER1_Visible":1,"GXCS3BUGSFIXER1_Width":"40","GXCS3BUGSFIXER1_Height":"40","GXCS3BUGSFIXER1_Visible":1,"GXFIELDHANDLER1_Value":"","GXFIELDHANDLER1_Clicktype":"","GXFIELDHANDLER1_Visible":1}'}
+        #headers = {'content-type': 'application/x-www-form-urlencoded'}
+        #response = requests.post(_URL+municipio+'/loginswimun.aspx', data=json.dumps(payload))
+        #cookie = response.cookies['ASP.NET_SessionId']
+        #logging.info(cookie)
+        #return cookie
         usr = driver.find_element_by_id('vUSERNICK')
         usr.clear()
         usr.send_keys('ADMINCS3')
@@ -62,98 +68,37 @@ class Page():
         psw.send_keys(u'\ue007')
 
 
-    def clearSession():
+    def clearSession(driver):
         driver.delete_cookie('ASP.NET_SessionId')
 
 
-    def reload():
+    def reload(driver):
         Page.clearSession()
         driver.refresh()
         Page.login()
 
 
-    def quit():
+    def quit(driver):
         driver.quit()
 
 
 
-""" WEBDRIVER CONNECTION """
-driver: webdriver = Page.conn()
-driver.implicitly_wait(10)
-
-
-class Actions():
-
-    def goToNovedades():
-        driver.get(_URL+'VerNovedadesGrales.aspx')
-
-
-    def goToLiquidacionImpuestoPredial():
-        driver.get(_URL+'FormAsistenteIgac.aspx')
-
-
-    def goToAtencionAlCliente():
-        driver.get(_URL+'atn_prd_estadocuenta.aspx')
-
-
-class Novedad():
-
-    def seleccionar(resolucion, tipo_novedad):
-
-        driver.find_element_by_id('IMGINS').click()
-
-        formulario = driver.find_element_by_xpath("//table[@id='TABLE1']")
-
-        print(formulario)
-
-        time.sleep(2)
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        driver.find_element_by_id("vVRNIRES")
-
-        input_resolucion = driver.find_element_by_id("vVRNIRES")
-        input_resolucion.send_keys(resolucion)
-
-        input_tipo_novedad = driver.find_element_by_id("vVRNITIP")
-
-        input_tipo_novedad.send_keys(tipo_novedad)
-
-        submit = driver.find_element_by_xpath("//input[@name='BUTTON1']").click()
-
-
-class EstadoCuenta():
-
-    def seleccionar(resolucion, tipo_novedad):
-
-        driver.find_element_by_id('IMGINS').click()
-
-        formulario = driver.find_element_by_xpath("//table[@id='TABLE1']")
-
-        print(formulario)
-
-        time.sleep(2)
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        driver.find_element_by_id("vVRNIRES")
-
-        input_resolucion = driver.find_element_by_id("vVRNIRES")
-        input_resolucion.send_keys(resolucion)
-
-        input_tipo_novedad = driver.find_element_by_id("vVRNITIP")
-
-        input_tipo_novedad.send_keys(tipo_novedad)
-
-        submit = driver.find_element_by_xpath("//input[@name='BUTTON1']").click()
-
 
 class AtencionAlCliente():
 
-    def fillRefCatastral(codRefCatastral):
+    def fillRefCatastral(driver, municipio, codRefCatastral):
+        time.sleep(2)
         refCatastral = driver.find_element_by_id('vWRGCDOCID_MPAGE')
         refCatastral.clear()
         refCatastral.send_keys(codRefCatastral)
         refCatastral.send_keys(Keys.ENTER)
 
-    def reciboDePago(codRefCatastral,):
-        AtencionAlCliente.fillRefCatastral(codRefCatastral)
+    def reciboDePago(municipio, codRefCatastral):
+
+        driver: webdriver = Page.conn(municipio)
+        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
+
+        AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
 
         btnRecibo = driver.find_element_by_id('BTNRECIBOF_MPAGE')
         btnRecibo.click()
@@ -175,67 +120,8 @@ class AtencionAlCliente():
         #driver.get(_URL)
 
 
-    def registrarPago(codRefCatastral, codRecibo, codCtaRecaudadora):
-        AtencionAlCliente.fillRefCatastral(codRefCatastral)
-
-        btn = driver.find_element_by_id('BTNPAG_MPAGE')
-        btn.click()
-
-        time.sleep(1)
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        time.sleep(1)
-        tabla = driver.find_element_by_id('Grid1ContainerTbl')
-        rows = tabla.find_elements_by_tag_name("tr")
-        for i in range(1,len(rows)):
-            print(rows[i].text.split(' ')[2].split('\n')[1])
-            if int(codRecibo) == int(rows[i].text.split(' ')[2].split('\n')[1]) :
-                checkBoxID = 'IMAGECHK_'+'{:04d}'.format(i)
-                driver.find_element_by_id(checkBoxID).click()
-                break
-        # SELECT CUENTA RECAUDADORA
-        selectCtaRecaudadora = driver.find_element_by_id("vCTACOD")
-        numCtas = selectCtaRecaudadora.find_elements_by_tag_name('option')
-        for cta in numCtas:
-            if codCtaRecaudadora == cta.get_attribute("value") :
-                cta.click()
-                break
-        # APLCIAR
-        driver.find_element_by_xpath("//table[@id='TABLE6']//input[@value='APLICAR']").click()
-        time.sleep(1)
-        driver.switch_to.alert.accept()
-        time.sleep(2)
-        first_window = driver.window_handles[0]
-        popup_window = driver.window_handles[1]
-        driver.switch_to.window(popup_window)
-        driver.close()
-        driver.switch_to.window(first_window)
-
-        #driver.get(_URL)
 
 
-
-    def pazYSalvo(codRefCatastral):
-        AtencionAlCliente.fillRefCatastral(codRefCatastral)
-        btn = driver.find_element_by_id('BTNPYZ_MPAGE')
-        btn.click()
-        time.sleep(1)
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        time.sleep(1)
-        driver.find_element_by_xpath("//table[@id='TABBUT']//input[@value='Emitir Paz y Salvo']").click()
-        time.sleep(2)
-        first_window = driver.window_handles[0]
-        popup_window = driver.window_handles[1]
-        driver.switch_to.window(popup_window)
-        driver.close()
-        driver.switch_to.window(first_window)
-        #driver.get(_URL)
-
-
-
-""" class Liquidación:
-
-    class ImpuestoPredial():
-
-        def montarCinta():
- """
-
+if __name__ == '__main__':
+    """ WEBDRIVER CONNECTION """
+    #driver.implicitly_wait(10)

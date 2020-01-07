@@ -8,6 +8,7 @@ class Novedad(forms.Form):
     tipo_novedad = forms.CharField()
 
 class AtencionAlCliente(forms.Form):
+    municipio = forms.CharField()
     refCatastral = forms.IntegerField()
 
 class RegistrarPago(forms.Form):
@@ -15,8 +16,6 @@ class RegistrarPago(forms.Form):
     codRecibo = forms.IntegerField()
     ctaRecaudadora = forms.IntegerField()
 
-class PazYSalvo(forms.Form):
-    refCatastral = forms.IntegerField()
 
 
 """class ImpuestoPredial(froms.Form, files.FIle):

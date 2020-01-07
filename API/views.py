@@ -7,21 +7,23 @@ from django.http import HttpResponse
 # Utilities
 from datetime import datetime
 import json
+# Threads
+from concurrent.futures import ThreadPoolExecutor
 
 # Import Selenium Crawler 
 from blackbox_crawler import controller
 
 # Model
-from .models import Novedad, AtencionAlCliente, RegistrarPago, PazYSalvo
+from .models import Novedad, AtencionAlCliente, RegistrarPago
 
 # Create your views here.
 """ LOGIN """
-controller.Page.login()
+#controller.Page.login()
+executor = ThreadPoolExecutor(max_workers=3)
 
 @csrf_exempt
 def elaborarNovedad(request):
     if request.method == 'POST':
-        controller.Actions.goToNovedades()
         form = Novedad(request.POST)
         data = {}
         if not form.is_valid():
@@ -37,31 +39,31 @@ def elaborarNovedad(request):
 @csrf_exempt
 def ordenPago(request):
     if request.method == 'POST':
-        controller.Actions.goToAtencionAlCliente()
         form = AtencionAlCliente(request.POST)
         data = {}
         if not form.is_valid():
             data['error'] = 'error faltan datos'
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
         else:
+            data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-            controller.AtencionAlCliente.reciboDePago(data['refCatastral'])
+            executor.submit(controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral']))
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
 @csrf_exempt
 def registrarPago(request):
     if request.method == 'POST':
-        controller.Actions.goToAtencionAlCliente()
         form = RegistrarPago(request.POST)
         data = {}
         if not form.is_valid():
             data['error'] = 'error faltan datos'
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
         else:
+            data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
             data['codRecibo'] = request.POST['codRecibo']
             data['ctaRecaudadora'] = request.POST['ctaRecaudadora']
-            controller.AtencionAlCliente.registrarPago(data['refCatastral'], data['codRecibo'], data['ctaRecaudadora'])
+            controller.AtencionAlCliente.registrarPago(data['municipio'], data['refCatastral'], data['codRecibo'], data['ctaRecaudadora'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
 
@@ -69,12 +71,15 @@ def registrarPago(request):
 def pazYSalvo(request):
     if request.method == 'POST':
         controller.Actions.goToAtencionAlCliente()
-        form = PazYSalvo(request.POST)
+        form = AtencionAlCliente(request.POST)
         data = {}
         if not form.is_valid():
             data['error'] = 'error faltan datos'
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
         else:
+            data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-            controller.AtencionAlCliente.pazYSalvo(data['refCatastral'])
+            controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+
+
