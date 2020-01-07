@@ -7,8 +7,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 
-_URL = 'http://192.168.0.250/clemencia/'
-downloadFolder = r''+os.getcwd()+'\Downloads\\'
+
+_URL = 'http://192.168.0.250/'
+#downloadFolder = r''+os.getcwd()+'\Downloads\\'
 
 class Page():
 
@@ -25,7 +26,7 @@ class Page():
         # OCULTAR NAVEGADOR
         # options.add_argument("--headless")
         prefs = {
-            "download.default_directory": downloadFolder,
+            #"download.default_directory": downloadFolder,
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
             "profile.default_content_settings" : 2,
@@ -45,7 +46,7 @@ class Page():
         options.add_experimental_option('prefs', prefs)
 
         driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=options)
-        driver.get(_URL)
+        #driver.get(_URL)
         time.sleep(1)
         return driver
 
@@ -171,7 +172,7 @@ class AtencionAlCliente():
         driver.close()
         driver.switch_to.window(first_window)
 
-        driver.get(_URL)
+        #driver.get(_URL)
 
 
     def registrarPago(codRefCatastral, codRecibo, codCtaRecaudadora):
@@ -209,7 +210,7 @@ class AtencionAlCliente():
         driver.close()
         driver.switch_to.window(first_window)
 
-        driver.get(_URL)
+        #driver.get(_URL)
 
 
 
@@ -227,7 +228,7 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
-        driver.get(_URL)
+        #driver.get(_URL)
 
 
 
