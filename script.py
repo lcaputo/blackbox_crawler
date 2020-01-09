@@ -1,5 +1,14 @@
 import time, threading, logging, requests, json
 from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
+import os, time, json
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
+from threading import Thread
+import multiprocessing, concurrent
+
 
 _URL = 'http://192.168.0.250/clemencia/loginswimun.aspx'
 
@@ -17,7 +26,7 @@ logging.basicConfig( level=logging.DEBUG, format="%(threadName)s|%(message)s" )
 #    #filename='messages.txt'
 #)
 
-def mensajes():
+"""def mensajes():
     logging.debug('Debug')
     logging.info('Info')
     logging.warning('Warning')
@@ -38,7 +47,7 @@ def count2(contador):
         contador += 10
         logging.info(f'#{contador}')
 
-"""if __name__ == '__main__':
+if __name__ == '__main__':
     contador = 0
     contador2 = 0
     thread = threading.Thread(target=count, args=[contador])
@@ -46,7 +55,8 @@ def count2(contador):
     thread2 = threading.Thread(target=count2, args=[contador2])
     thread2.start()"""
 
-if __name__ == '__main__':
+
+"""if __name__ == '__main__':
     contador = 0
     executor = ThreadPoolExecutor(max_workers=3)
     executor.submit(count, contador)
@@ -55,8 +65,7 @@ if __name__ == '__main__':
     r = requests.post(_URL, data=json.dumps(payload), headers=headers)
     logging.info(r.cookies['ASP.NET_SessionId'])
 
-
-"""threads = []
+threads = []
 
 for _ in range(5):
     t = threading.Thread(target=worker)
@@ -65,3 +74,105 @@ for _ in range(5):
 
 for thread in threads:
     thread.join()"""
+
+
+
+
+
+
+# def get_driver():
+#   driver = getattr(threadLocal, 'driver', None)
+#   if driver is None:
+#     chromeDriver = ChromeDriverManager().install()
+#     chromeOptions = webdriver.ChromeOptions()
+#     #chromeOptions.add_argument("--headless")
+#     driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=chromeOptions)
+#     setattr(threadLocal, 'driver', driver)
+#   return driver
+
+drivers = []
+
+def driver():
+#    driver: webdriver = get_driver()
+    driver.get(_URL)
+
+#executor = ThreadPool(max_workers=3)
+
+#if(driver.toString().contains("null")):
+
+chromeDriver = ChromeDriverManager().install()
+# CONFIG WEBDRIVER OPTIONS
+options = webdriver.ChromeOptions()
+options.add_argument("--disable-infobars")
+options.add_argument("--disable-extensions")
+options.add_argument("--no-referrers")
+options.add_argument("--disable-popup-blocking")
+# OCULTAR NAVEGADOR
+# options.add_argument("--headless")
+prefs = {
+    # "download.default_directory": downloadFolder,
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "profile.default_content_settings": 2,
+    "profile.default_content_settings.popups": 0,
+    "profile.default_content_settings.notifications": 1,
+    # "profile.managed_default_content_settings.images": 2,
+    "profile.browser.cache.disk.enable": False,
+    "profile.browser.cache.memory.enable": False,
+    "browser.cache.offline.enable": False,
+    "network.http.use-cache": False,
+    "profile.default_content_setting_values.plugins": 1,
+    "profile.content_settings.plugin_whitelist.adobe-flash-player": 1,
+    "profile.content_settings.exceptions.plugins.*,*.per_resource.adobe-flash-player": 1,
+    "PluginsAllowedForUrls": _URL,
+    "profile.default_content_settings.popups": 0
+}
+options.add_experimental_option('prefs', prefs)
+
+def conn():
+    driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=options)
+    driver.implicitly_wait(10)
+    # driver.maximize_window()
+    # driver.get(_URL)
+    # Page.login(driver)
+    # driver.delete_all_cookies()
+    # cookie = {'name': 'ASP.NET_SessionId', 'value': Page.login(municipio)}
+    # driver.add_cookie(cookie)
+    drivers.append( {'driver': driver, 'status': 'open'} )
+    return driver
+
+
+def sumar(a,b):
+    logging.info(a+b)
+
+threads = []
+if __name__ == '__main__':
+    for _ in range(1):
+        conn()
+    for i in range(len(drivers)):
+        logging.info(drivers[i]['driver'])
+        drivers[i]['driver'].get('http://www.google.com')
+    # for _ in range(3):
+    #     thread = Thread(target=conn())
+    #     threads.append(thread)
+    #     thread.start()
+    #
+    # for thread in threads:
+    #     thread.join()
+    #
+    # for i in range(0,len(drivers)):
+    #     driver: webdriver = threads[i].driver
+    #     driver.get('http://www.google.com')
+
+
+    #sdriver.get('http://www.google.com')
+"""    thread = Thread(target=driver())
+    threads.append(thread)
+    thread.start()
+    for thread in threads:
+        thread.join()
+    current_process = multiprocessing.current_process() """
+    #    thread.get().get(_URL)
+    #with ThreadPool() as executor:
+    #    result = executor.apply_async(get_driver())
+    #    result.get().driver.get(_URL)

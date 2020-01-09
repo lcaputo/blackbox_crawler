@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from datetime import datetime
 import json
 # Threads
-from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import ThreadPool
 
 # Import Selenium Crawler 
 from blackbox_crawler import controller
@@ -19,7 +19,7 @@ from .models import Novedad, AtencionAlCliente, RegistrarPago
 # Create your views here.
 """ LOGIN """
 #controller.Page.login()
-executor = ThreadPoolExecutor(max_workers=3)
+executor = ThreadPool(processes=10)
 
 @csrf_exempt
 def elaborarNovedad(request):
@@ -47,8 +47,11 @@ def ordenPago(request):
         else:
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-            executor.submit(controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral']))
+
+            executor.apply_async(controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral']))
+
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+
 
 @csrf_exempt
 def registrarPago(request):
@@ -81,5 +84,3 @@ def pazYSalvo(request):
             data['refCatastral'] = request.POST['refCatastral']
             controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
-
-

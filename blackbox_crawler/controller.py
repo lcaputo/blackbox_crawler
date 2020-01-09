@@ -3,16 +3,33 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 import requests, logging, threading
+#from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.pool import ThreadPool
 
 _URL = 'http://192.168.0.250/'
 #downloadFolder = r''+os.getcwd()+'\Downloads\\'
-
+executor = ThreadPool(processes=10)
 logging.basicConfig( level=logging.DEBUG, format="%(threadName)s|%(message)s" )
+drivers = []
+
+class driverOptions():
+    def statusAvalible(i:int):
+        drivers[i]['status'] = 'avalible'
+    def statusRunning(i:int):
+        drivers[i]['status'] = 'running'
+    def selectAvalibleDriver():
+        for i in range(len(drivers)):
+            logging.info(drivers[i]['status'])
+            if drivers[i]['status'] == 'avalible':
+                driverOptions.statusRunning(i)
+                return i
+        Page.conn()
+        return driverOptions.selectAvalibleDriver()
 
 
 class Page():
 
-    def conn(municipio, accion=''):
+    def conn():
         chromeDriver = ChromeDriverManager().install()
         # CONFIG WEBDRIVER OPTIONS
         options = webdriver.ChromeOptions()
@@ -21,7 +38,7 @@ class Page():
         options.add_argument("--no-referrers")
         options.add_argument("--disable-popup-blocking")
         # OCULTAR NAVEGADOR
-        options.add_argument("--headless")
+        #options.add_argument("--headless")
         prefs = {
             #"download.default_directory": downloadFolder,
             "download.prompt_for_download": False,
@@ -38,17 +55,18 @@ class Page():
             "profile.content_settings.plugin_whitelist.adobe-flash-player": 1,
             "profile.content_settings.exceptions.plugins.*,*.per_resource.adobe-flash-player": 1,
             "PluginsAllowedForUrls": _URL,
-            "profile.default_content_settings.popups": 0
         }
         options.add_experimental_option('prefs', prefs)
 
         driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=options)
         driver.implicitly_wait(10)
-        driver.get(_URL+municipio)
+        #driver.maximize_window()
+        driver.get(_URL+'clemencia/loginswimun.aspx')
         Page.login(driver)
         #driver.delete_all_cookies()
         #cookie = {'name': 'ASP.NET_SessionId', 'value': Page.login(municipio)}
         #driver.add_cookie(cookie)
+        drivers.append({'status': 'avalible', 'driver': driver})
         return driver
 
 
@@ -67,6 +85,8 @@ class Page():
         psw.send_keys('18968934!')
         psw.send_keys(u'\ue007')
 
+    def isLogged(driver):
+        driver #TODO:
 
     def clearSession(driver):
         driver.delete_cookie('ASP.NET_SessionId')
@@ -83,11 +103,9 @@ class Page():
 
 
 
-
 class AtencionAlCliente():
 
     def fillRefCatastral(driver, municipio, codRefCatastral):
-        time.sleep(2)
         refCatastral = driver.find_element_by_id('vWRGCDOCID_MPAGE')
         refCatastral.clear()
         refCatastral.send_keys(codRefCatastral)
@@ -95,7 +113,10 @@ class AtencionAlCliente():
 
     def reciboDePago(municipio, codRefCatastral):
 
-        driver: webdriver = Page.conn(municipio)
+        noDriver: int = driverOptions.selectAvalibleDriver()
+
+        driver: webdriver = drivers[noDriver]['driver']
+        time.sleep(1)
         driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
 
         AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
@@ -110,6 +131,44 @@ class AtencionAlCliente():
         btnGenerar = driver.find_element_by_name('BUTTON1')
         btnGenerar.click()
 
+        time.sleep(1)
+        first_window = driver.window_handles[0]
+        popup_window = driver.window_handles[1]
+        driver.switch_to.window(popup_window)
+        driver.close()
+        driver.switch_to.window(first_window)
+        driverOptions.statusAvalible(noDriver)
+        #driver.get(_URL)
+
+
+"""    def registrarPago(codRefCatastral, codRecibo, codCtaRecaudadora):
+        AtencionAlCliente.fillRefCatastral(codRefCatastral)
+
+        btn = driver.find_element_by_id('BTNPAG_MPAGE')
+        btn.click()
+
+        time.sleep(1)
+        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+        time.sleep(1)
+        tabla = driver.find_element_by_id('Grid1ContainerTbl')
+        rows = tabla.find_elements_by_tag_name("tr")
+        for i in range(1, len(rows)):
+            print(rows[i].text.split(' ')[2].split('\n')[1])
+            if int(codRecibo) == int(rows[i].text.split(' ')[2].split('\n')[1]):
+                checkBoxID = 'IMAGECHK_' + '{:04d}'.format(i)
+                driver.find_element_by_id(checkBoxID).click()
+                break
+        # SELECT CUENTA RECAUDADORA
+        selectCtaRecaudadora = driver.find_element_by_id("vCTACOD")
+        numCtas = selectCtaRecaudadora.find_elements_by_tag_name('option')
+        for cta in numCtas:
+            if codCtaRecaudadora == cta.get_attribute("value"):
+                cta.click()
+                break
+        # APLCIAR
+        driver.find_element_by_xpath("//table[@id='TABLE6']//input[@value='APLICAR']").click()
+        time.sleep(1)
+        driver.switch_to.alert.accept()
         time.sleep(2)
         first_window = driver.window_handles[0]
         popup_window = driver.window_handles[1]
@@ -117,9 +176,24 @@ class AtencionAlCliente():
         driver.close()
         driver.switch_to.window(first_window)
 
-        #driver.get(_URL)
+        driver.get(_URL)
 
 
+    def pazYSalvo(codRefCatastral):
+        AtencionAlCliente.fillRefCatastral(codRefCatastral)
+        btn = driver.find_element_by_id('BTNPYZ_MPAGE')
+        btn.click()
+        time.sleep(1)
+        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+        time.sleep(1)
+        driver.find_element_by_xpath("//table[@id='TABBUT']//input[@value='Emitir Paz y Salvo']").click()
+        time.sleep(2)
+        first_window = driver.window_handles[0]
+        popup_window = driver.window_handles[1]
+        driver.switch_to.window(popup_window)
+        driver.close()
+        driver.switch_to.window(first_window)
+        driver.get(_URL) """
 
 
 if __name__ == '__main__':
