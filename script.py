@@ -8,7 +8,10 @@ from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 from threading import Thread
 import multiprocessing, concurrent
-
+import io
+import requests
+import PyPDF2
+from tika import parser
 
 _URL = 'http://192.168.0.250/clemencia/loginswimun.aspx'
 
@@ -93,41 +96,41 @@ for thread in threads:
 drivers = []
 
 def driver():
-#    driver: webdriver = get_driver()
+    #driver: webdriver = get_driver()
     driver.get(_URL)
 
-#executor = ThreadPool(max_workers=3)
+    #executor = ThreadPool(max_workers=3)
 
-#if(driver.toString().contains("null")):
+    #if(driver.toString().contains("null")):
 
-chromeDriver = ChromeDriverManager().install()
-# CONFIG WEBDRIVER OPTIONS
-options = webdriver.ChromeOptions()
-options.add_argument("--disable-infobars")
-options.add_argument("--disable-extensions")
-options.add_argument("--no-referrers")
-options.add_argument("--disable-popup-blocking")
-# OCULTAR NAVEGADOR
-# options.add_argument("--headless")
-prefs = {
-    # "download.default_directory": downloadFolder,
-    "download.prompt_for_download": False,
-    "download.directory_upgrade": True,
-    "profile.default_content_settings": 2,
-    "profile.default_content_settings.popups": 0,
-    "profile.default_content_settings.notifications": 1,
-    # "profile.managed_default_content_settings.images": 2,
-    "profile.browser.cache.disk.enable": False,
-    "profile.browser.cache.memory.enable": False,
-    "browser.cache.offline.enable": False,
-    "network.http.use-cache": False,
-    "profile.default_content_setting_values.plugins": 1,
-    "profile.content_settings.plugin_whitelist.adobe-flash-player": 1,
-    "profile.content_settings.exceptions.plugins.*,*.per_resource.adobe-flash-player": 1,
-    "PluginsAllowedForUrls": _URL,
-    "profile.default_content_settings.popups": 0
-}
-options.add_experimental_option('prefs', prefs)
+    chromeDriver = ChromeDriverManager().install()
+    # CONFIG WEBDRIVER OPTIONS
+    options = webdriver.ChromeOptions()
+    options.add_argument("--disable-infobars")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--no-referrers")
+    options.add_argument("--disable-popup-blocking")
+    # OCULTAR NAVEGADOR
+    # options.add_argument("--headless")
+    prefs = {
+        # "download.default_directory": downloadFolder,
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "profile.default_content_settings": 2,
+        "profile.default_content_settings.popups": 0,
+        "profile.default_content_settings.notifications": 1,
+        # "profile.managed_default_content_settings.images": 2,
+        "profile.browser.cache.disk.enable": False,
+        "profile.browser.cache.memory.enable": False,
+        "browser.cache.offline.enable": False,
+        "network.http.use-cache": False,
+        "profile.default_content_setting_values.plugins": 1,
+        "profile.content_settings.plugin_whitelist.adobe-flash-player": 1,
+        "profile.content_settings.exceptions.plugins.*,*.per_resource.adobe-flash-player": 1,
+        "PluginsAllowedForUrls": _URL,
+        "profile.default_content_settings.popups": 0
+    }
+    options.add_experimental_option('prefs', prefs)
 
 def conn():
     driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=options)
@@ -146,12 +149,12 @@ def sumar(a,b):
     logging.info(a+b)
 
 threads = []
-if __name__ == '__main__':
-    for _ in range(1):
-        conn()
-    for i in range(len(drivers)):
-        logging.info(drivers[i]['driver'])
-        drivers[i]['driver'].get('http://www.google.com')
+# if __name__ == '__main__':
+#     for _ in range(1):
+#         conn()
+#     for i in range(len(drivers)):
+#         logging.info(drivers[i]['driver'])
+#         drivers[i]['driver'].get('http://www.google.com')
     # for _ in range(3):
     #     thread = Thread(target=conn())
     #     threads.append(thread)
@@ -176,3 +179,12 @@ if __name__ == '__main__':
     #with ThreadPool() as executor:
     #    result = executor.apply_async(get_driver())
     #    result.get().driver.get(_URL)
+
+if __name__ == '__main__':
+    url = 'http://192.168.0.250/clemencia/arptrecofpag_850_1100.aspx?2020,C,3,170,1,2,1'
+
+    r = requests.get(url)
+    f = io.BytesIO(r.content)
+
+    raw = parser.from_file(f)
+    print(raw['content'])

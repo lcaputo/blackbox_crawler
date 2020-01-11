@@ -66,7 +66,7 @@ def registrarPago(request):
             data['refCatastral'] = request.POST['refCatastral']
             data['codRecibo'] = request.POST['codRecibo']
             data['ctaRecaudadora'] = request.POST['ctaRecaudadora']
-            controller.AtencionAlCliente.registrarPago(data['municipio'], data['refCatastral'], data['codRecibo'], data['ctaRecaudadora'])
+            executor.apply_async(controller.AtencionAlCliente.registrarPago(data['municipio'], data['refCatastral'], data['codRecibo'], data['ctaRecaudadora']))
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
 
@@ -82,5 +82,5 @@ def pazYSalvo(request):
         else:
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-            controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
+            executor.apply_async(controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral']))
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
