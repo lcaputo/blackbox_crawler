@@ -160,7 +160,7 @@ class AtencionAlCliente():
         time.sleep(1)
         driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
 
-        AtencionAlCliente.fillRefCatastral(codRefCatastral)
+        AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
 
         btn = driver.find_element_by_id('BTNPAG_MPAGE')
         btn.click()
@@ -203,7 +203,7 @@ class AtencionAlCliente():
         driver: webdriver = drivers[noDriver]['driver']
         time.sleep(1)
         driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
-        AtencionAlCliente.fillRefCatastral(codRefCatastral)
+        AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
         btn = driver.find_element_by_id('BTNPYZ_MPAGE')
         btn.click()
         time.sleep(1)
