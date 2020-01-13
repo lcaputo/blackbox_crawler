@@ -87,6 +87,7 @@ def pazYSalvo(request):
             controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
+
 # @csrf_exempt
 # def pagoManual(request):
 #     if request.method == 'POST':
@@ -99,6 +100,5 @@ def pazYSalvo(request):
 #         else:
 #             data['municipio'] = request.POST['municipio']
 #             data['refCatastral'] = request.POST['refCatastral']
-#             executor.apply_async(
-#                 controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral']))
+#             controller.AtencionAlCliente.pagoManual(data['municipio'], data['refCatastral'])
 #             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
