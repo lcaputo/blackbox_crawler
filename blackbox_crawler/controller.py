@@ -171,12 +171,13 @@ class AtencionAlCliente():
         tabla = driver.find_element_by_id('Grid1ContainerTbl')
         duplicated_rows = tabla.find_elements_by_tag_name("tr")
         rows = []
-        for row in duplicated_rows:
-            if row not in duplicated_rows:
-                rows.append(row)
-        for i in range(1, len(rows)):
-            print(rows[i].text.split(' ')[2].split('\n')[1])
-            if int(codRecibo) == int(rows[i].text.split(' ')[2].split('\n')[1]):
+        for d in range(len(duplicated_rows)):
+            r = int(duplicated_rows[d].text.split(' ')[2].split('\n')[1])
+            if r not in rows:
+                rows.append(r)
+        for i in range(len(rows)):
+            #print(rows[i].text.split(' ')[2].split('\n')[1])
+            if int(codRecibo) == rows[i]:
                 checkBoxID = 'IMAGECHK_' + '{:04d}'.format(i)
                 driver.find_element_by_id(checkBoxID).click()
                 break
