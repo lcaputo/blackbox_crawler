@@ -169,8 +169,11 @@ class AtencionAlCliente():
         driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
         time.sleep(1)
         tabla = driver.find_element_by_id('Grid1ContainerTbl')
-        rows = tabla.find_elements_by_tag_name("tr")
-        rows = list(dict.fromkeys(rows))
+        duplicated_rows = tabla.find_elements_by_tag_name("tr")
+        rows = []
+        for row in duplicated_rows:
+            if row not in duplicated_rows:
+                rows.append(row)
         for i in range(1, len(rows)):
             print(rows[i].text.split(' ')[2].split('\n')[1])
             if int(codRecibo) == int(rows[i].text.split(' ')[2].split('\n')[1]):
