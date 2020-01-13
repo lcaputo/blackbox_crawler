@@ -146,7 +146,7 @@ class AtencionAlCliente():
         logging.info(vigencia)
         driverOptions.statusAvalible(noDriver)
         res = {
-            'codOrdenPago': int(codOrdenPago),
+            'codOrdenPago': codOrdenPago,
             'vigencia': vigencia
         }
         return res

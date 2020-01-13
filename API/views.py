@@ -50,7 +50,7 @@ def ordenPago(request):
             data['refCatastral'] = request.POST['refCatastral']
             res = controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral'].zfill(15))
             #print(res['codOrdenPago'],' | ',res['vigencia'])
-            data['codOrdenPago'] = res['codOrdenPago']
+            data['codOrdenPago'] = int(res['codOrdenPago'])
             data['vigencia'] = res['vigencia']
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
