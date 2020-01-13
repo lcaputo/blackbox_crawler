@@ -8,7 +8,7 @@ from multiprocessing.pool import ThreadPool
 
 _URL = 'http://192.168.0.250/'
 #downloadFolder = r''+os.getcwd()+'\Downloads\\'
-executor = ThreadPool(processes=10)
+executor = ThreadPool()
 logging.basicConfig( level=logging.DEBUG, format="%(threadName)s|%(message)s" )
 drivers = []
 
@@ -23,7 +23,7 @@ class driverOptions():
             if drivers[i]['status'] == 'avalible':
                 driverOptions.statusRunning(i)
                 return i
-        Page.conn()
+        executor.apply_async(Page.conn())
         return driverOptions.selectAvalibleDriver()
 
 
@@ -111,7 +111,8 @@ class AtencionAlCliente():
         refCatastral.send_keys(codRefCatastral)
         refCatastral.send_keys(Keys.ENTER)
 
-    def reciboDePago(municipio, codRefCatastral):
+
+    def reciboDePago(municipio, refCatastral):
 
         noDriver: int = driverOptions.selectAvalibleDriver()
 
@@ -119,7 +120,7 @@ class AtencionAlCliente():
         time.sleep(1)
         driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
 
-        AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
+        AtencionAlCliente.fillRefCatastral(driver, municipio, refCatastral)
 
         btnRecibo = driver.find_element_by_id('BTNRECIBOF_MPAGE')
         btnRecibo.click()
@@ -137,11 +138,28 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
+        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
+        driver.find_element_by_name('BTNRECIBOPAGO_MPAGE').click()
+        codOrdenPago = driver.find_element_by_id('span_FACICOD_0001').text
+        logging.info(codOrdenPago)
+        vigencia = driver.find_element_by_id('span_VGFCOD_0001').text
+        logging.info(vigencia)
         driverOptions.statusAvalible(noDriver)
-        #driver.get(_URL)
+        res = {
+            'codOrdenPago': codOrdenPago,
+            'vigencia': vigencia
+        }
+        return res
 
 
-"""    def registrarPago(codRefCatastral, codRecibo, codCtaRecaudadora):
+    def registrarPago(municipio, codRefCatastral, codRecibo, codCtaRecaudadora):
+
+        noDriver: int = driverOptions.selectAvalibleDriver()
+
+        driver: webdriver = drivers[noDriver]['driver']
+        time.sleep(1)
+        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
+
         AtencionAlCliente.fillRefCatastral(codRefCatastral)
 
         btn = driver.find_element_by_id('BTNPAG_MPAGE')
@@ -179,7 +197,12 @@ class AtencionAlCliente():
         driver.get(_URL)
 
 
-    def pazYSalvo(codRefCatastral):
+    def pazYSalvo(municipio, codRefCatastral):
+        noDriver: int = driverOptions.selectAvalibleDriver()
+
+        driver: webdriver = drivers[noDriver]['driver']
+        time.sleep(1)
+        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
         AtencionAlCliente.fillRefCatastral(codRefCatastral)
         btn = driver.find_element_by_id('BTNPYZ_MPAGE')
         btn.click()
@@ -193,7 +216,7 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
-        driver.get(_URL) """
+        driver.get(_URL)
 
 
 if __name__ == '__main__':

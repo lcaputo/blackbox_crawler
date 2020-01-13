@@ -12,6 +12,7 @@ class AtencionAlCliente(forms.Form):
     refCatastral = forms.IntegerField()
 
 class RegistrarPago(forms.Form):
+    municipio = forms.CharField()
     refCatastral = forms.IntegerField()
     codRecibo = forms.IntegerField()
     ctaRecaudadora = forms.IntegerField()

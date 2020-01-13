@@ -8,7 +8,8 @@ from django.http import HttpResponse
 from datetime import datetime
 import json
 # Threads
-from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool
+import threading, queue
 
 # Import Selenium Crawler 
 from blackbox_crawler import controller
@@ -19,7 +20,7 @@ from .models import Novedad, AtencionAlCliente, RegistrarPago
 # Create your views here.
 """ LOGIN """
 #controller.Page.login()
-executor = ThreadPool(processes=10)
+
 
 @csrf_exempt
 def elaborarNovedad(request):
@@ -47,9 +48,10 @@ def ordenPago(request):
         else:
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-
-            executor.apply_async(controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral']))
-
+            res = controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral'].zfill(15))
+            #print(res['codOrdenPago'],' | ',res['vigencia'])
+            data['codOrdenPago'] = res['codOrdenPago']
+            data['vigencia'] = res['vigencia']
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
 
@@ -66,7 +68,7 @@ def registrarPago(request):
             data['refCatastral'] = request.POST['refCatastral']
             data['codRecibo'] = request.POST['codRecibo']
             data['ctaRecaudadora'] = request.POST['ctaRecaudadora']
-            executor.apply_async(controller.AtencionAlCliente.registrarPago(data['municipio'], data['refCatastral'], data['codRecibo'], data['ctaRecaudadora']))
+            controller.AtencionAlCliente.registrarPago(data['municipio'], data['refCatastral'], data['codRecibo'], data['ctaRecaudadora'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
 
@@ -82,5 +84,21 @@ def pazYSalvo(request):
         else:
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-            executor.apply_async(controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral']))
+            controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+
+# @csrf_exempt
+# def pagoManual(request):
+#     if request.method == 'POST':
+#         controller.Actions.goToAtencionAlCliente()
+#         form = AtencionAlCliente(request.POST)
+#         data = {}
+#         if not form.is_valid():
+#             data['error'] = 'error faltan datos'
+#             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+#         else:
+#             data['municipio'] = request.POST['municipio']
+#             data['refCatastral'] = request.POST['refCatastral']
+#             executor.apply_async(
+#                 controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral']))
+#             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
