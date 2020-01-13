@@ -193,8 +193,7 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
-
-        driver.get(_URL)
+        driverOptions.statusAvalible(noDriver)
 
 
     def pazYSalvo(municipio, codRefCatastral):
@@ -216,7 +215,7 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
-        driver.get(_URL)
+        driverOptions.statusAvalible(noDriver)
 
 
 if __name__ == '__main__':
