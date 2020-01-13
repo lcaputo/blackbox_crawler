@@ -171,21 +171,21 @@ class AtencionAlCliente():
         tabla = driver.find_element_by_id('Grid1ContainerTbl')
         duplicated_rows = tabla.find_elements_by_tag_name("tr")
         rows = []
-        for d in range(len(duplicated_rows)):
+        for d in range(1, len(duplicated_rows)):
             r = int(duplicated_rows[d].text.split(' ')[2].split('\n')[1])
             if r not in rows:
                 rows.append(r)
-        for i in range(len(rows)):
+        for i in range(0, len(rows)):
             #print(rows[i].text.split(' ')[2].split('\n')[1])
-            if int(codRecibo) == rows[i]:
-                checkBoxID = 'IMAGECHK_' + '{:04d}'.format(i)
+            if int(codRecibo) == int(rows[i]):
+                checkBoxID = 'IMAGECHK_' + '{:04d}'.format(i+1)
                 driver.find_element_by_id(checkBoxID).click()
                 break
         # SELECT CUENTA RECAUDADORA
         selectCtaRecaudadora = driver.find_element_by_id("vCTACOD")
         numCtas = selectCtaRecaudadora.find_elements_by_tag_name('option')
         for cta in numCtas:
-            if codCtaRecaudadora == cta.get_attribute("value"):
+            if str(codCtaRecaudadora) == str(cta.get_attribute("value")):
                 cta.click()
                 break
         # APLCIAR
