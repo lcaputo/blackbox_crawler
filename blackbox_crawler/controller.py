@@ -170,6 +170,7 @@ class AtencionAlCliente():
         time.sleep(1)
         tabla = driver.find_element_by_id('Grid1ContainerTbl')
         rows = tabla.find_elements_by_tag_name("tr")
+        rows = dict.fromkeys(rows)
         for i in range(1, len(rows)):
             print(rows[i].text.split(' ')[2].split('\n')[1])
             if int(codRecibo) == int(rows[i].text.split(' ')[2].split('\n')[1]):
