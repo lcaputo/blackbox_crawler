@@ -77,6 +77,10 @@ class Page():
         #cookie = response.cookies['ASP.NET_SessionId']
         #logging.info(cookie)
         #return cookie
+        vigencia_dropdown = driver.find_element_by_id('vVGFCOD')
+        options = vigencia_dropdown.find_elements_by_xpath("option//*")
+        for elm in options:
+            print(elm.text)
         usr = driver.find_element_by_id('vUSERNICK')
         usr.clear()
         usr.send_keys('ADMINCS3')

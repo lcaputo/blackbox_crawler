@@ -75,7 +75,6 @@ def registrarPago(request):
 @csrf_exempt
 def pazYSalvo(request):
     if request.method == 'POST':
-        controller.Actions.goToAtencionAlCliente()
         form = AtencionAlCliente(request.POST)
         data = {}
         if not form.is_valid():
