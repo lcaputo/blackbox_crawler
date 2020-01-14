@@ -83,7 +83,8 @@ def pazYSalvo(request):
         else:
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
-            controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
+            res = controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
+            data['codPyZ'] = int(res['codPyZ'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
 

@@ -142,8 +142,7 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
-        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
-        driver.find_element_by_name('BTNRECIBOPAGO_MPAGE').click()
+        driver.get(_URL+municipio+'/verfacturaspredio.aspx')
         codOrdenPago = driver.find_element_by_id('span_FACICOD_0001').text
         logging.info(codOrdenPago)
         vigencia = driver.find_element_by_id('span_VGFCOD_0001').text
@@ -224,8 +223,15 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
+        #
+        driver.get(_URL + municipio + '/verpyz.aspx')
+        codPyZ = driver.find_element_by_id('span_PYZVISCOD_0001').text
+        logging.info(codPyZ)
         driverOptions.statusAvalible(noDriver)
-
+        res = {
+            'codPyZ': codPyZ
+        }
+        return res
 
 if __name__ == '__main__':
     """ WEBDRIVER CONNECTION """
