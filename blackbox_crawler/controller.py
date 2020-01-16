@@ -17,19 +17,19 @@ class driverOptions():
         drivers[i]['status'] = 'avalible'
     def statusRunning(i:int):
         drivers[i]['status'] = 'running'
-    def selectAvalibleDriver():
+    def selectAvalibleDriver(municipio):
         for i in range(len(drivers)):
             logging.info(drivers[i]['status'])
             if drivers[i]['status'] == 'avalible':
                 driverOptions.statusRunning(i)
                 return i
-        executor.apply_async(Page.conn())
+        executor.apply_async(Page.conn(municipio))
         return driverOptions.selectAvalibleDriver()
 
 
 class Page():
 
-    def conn():
+    def conn(municipio):
         chromeDriver = ChromeDriverManager().install()
         # CONFIG WEBDRIVER OPTIONS
         options = webdriver.ChromeOptions()
@@ -61,8 +61,8 @@ class Page():
         driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=options)
         driver.implicitly_wait(10)
         #driver.maximize_window()
-        driver.get(_URL+'clemencia/loginswimun.aspx')
-        Page.login(driver)
+        driver.get(_URL+municipio+'/loginswimun.aspx')
+        Page.login(driver, municipio)
         #driver.delete_all_cookies()
         #cookie = {'name': 'ASP.NET_SessionId', 'value': Page.login(municipio)}
         #driver.add_cookie(cookie)
@@ -70,7 +70,7 @@ class Page():
         return driver
 
 
-    def login(driver):
+    def login(driver, municipio):
         #payload = {'vUSERNICK': 'ADMINCS3', 'vUSERPASS': '18968934!', 'vVGFCOD': '2020', 'GXState': '{"_EventName":"EENTER.","_EventGridId":"","_EventRowId":"","vSWITTITULO1":"","vSWITTITULO2":"","GXFIELDHANDLER1_Control":"vUSERPASS","SCAMESSAGE1_Messagetype":"dialog","GXFIELDHANDLER1_Keycode":"","GX_FocusControl":"vSWITTITULO1","GX_AJAX_KEY":"2095BCCA5EEC7630D4A79BE44EE42942","AJAX_SECURITY_TOKEN":"B8284BEA03BEC307EE7F21FFD4A1CB55AB4790D15DE3CB0237EB74FE92236ADC","GX_CMP_OBJS":{},"sCallerURL":"'+_URL+municipio+'/bienvenido.aspx","GX_RES_PROVIDER":"GXResourceProvider.aspx","GX_THEME":"TemaAzul","_MODE":"","Mode":"","IsModified":"1","SCAMESSAGE1_Width":"312","SCAMESSAGE1_Height":"62","SCAMESSAGE1_Animationtype":"show","SCAMESSAGE1_Visible":1,"GXBALLOON1_Width":"100","GXBALLOON1_Height":"100","GXBALLOON1_Maxwidth":400,"GXBALLOON1_Delay":0,"GXBALLOON1_Position":"right","GXBALLOON1_Offset":2,"GXBALLOON1_Keepalive":0,"GXBALLOON1_Timetolive":2000,"GXBALLOON1_Visible":1,"WIJMODATEPICKER1_Width":"100","WIJMODATEPICKER1_Height":"100","WIJMODATEPICKER1_Culture":"es-MX","WIJMODATEPICKER1_Visible":1,"CS3NOMOUSEUP1_Width":"100","CS3NOMOUSEUP1_Height":"100","CS3NOMOUSEUP1_Visible":1,"GXPLACEHOLDER1_Width":"100","GXPLACEHOLDER1_Height":"100","GXPLACEHOLDER1_Visible":1,"GXCS3BUGSFIXER1_Width":"40","GXCS3BUGSFIXER1_Height":"40","GXCS3BUGSFIXER1_Visible":1,"GXFIELDHANDLER1_Value":"","GXFIELDHANDLER1_Clicktype":"","GXFIELDHANDLER1_Visible":1}'}
         #headers = {'content-type': 'application/x-www-form-urlencoded'}
         #response = requests.post(_URL+municipio+'/loginswimun.aspx', data=json.dumps(payload))
@@ -83,10 +83,10 @@ class Page():
             print(elm.text)
         usr = driver.find_element_by_id('vUSERNICK')
         usr.clear()
-        usr.send_keys('ADMINCS3')
+        usr.send_keys(municipio)
         psw = driver.find_element_by_id('vUSERPASS')
         psw.clear()
-        psw.send_keys('18968934!')
+        psw.send_keys(municipio+'.co')
         psw.send_keys(u'\ue007')
 
     def isLogged(driver):
@@ -118,7 +118,7 @@ class AtencionAlCliente():
 
     def reciboDePago(municipio, refCatastral):
 
-        noDriver: int = driverOptions.selectAvalibleDriver()
+        noDriver: int = driverOptions.selectAvalibleDriver(municipio)
 
         driver: webdriver = drivers[noDriver]['driver']
         time.sleep(1)
@@ -157,7 +157,7 @@ class AtencionAlCliente():
 
     def registrarPago(municipio, codRefCatastral, codRecibo, codCtaRecaudadora):
 
-        noDriver: int = driverOptions.selectAvalibleDriver()
+        noDriver: int = driverOptions.selectAvalibleDriver(municipio)
 
         driver: webdriver = drivers[noDriver]['driver']
         time.sleep(1)
@@ -205,7 +205,7 @@ class AtencionAlCliente():
 
 
     def pazYSalvo(municipio, codRefCatastral):
-        noDriver: int = driverOptions.selectAvalibleDriver()
+        noDriver: int = driverOptions.selectAvalibleDriver(municipio)
 
         driver: webdriver = drivers[noDriver]['driver']
         time.sleep(1)
