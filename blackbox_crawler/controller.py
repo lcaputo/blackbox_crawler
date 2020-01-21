@@ -24,7 +24,7 @@ class driverOptions():
                 driverOptions.statusRunning(i)
                 return i
         executor.apply_async(Page.conn(municipio))
-        return driverOptions.selectAvalibleDriver()
+        return driverOptions.selectAvalibleDriver(municipio)
 
 
 class Page():
@@ -77,10 +77,10 @@ class Page():
         #cookie = response.cookies['ASP.NET_SessionId']
         #logging.info(cookie)
         #return cookie
-        vigencia_dropdown = driver.find_element_by_id('vVGFCOD')
-        options = vigencia_dropdown.find_elements_by_xpath("option//*")
-        for elm in options:
-            print(elm.text)
+        #vigencia_dropdown = driver.find_element_by_id('vVGFCOD')
+        #options = vigencia_dropdown.find_elements_by_xpath("option//*")
+        #for elm in options:
+        #    print(elm.text)
         usr = driver.find_element_by_id('vUSERNICK')
         usr.clear()
         usr.send_keys(municipio)
@@ -188,7 +188,7 @@ class AtencionAlCliente():
         selectCtaRecaudadora = driver.find_element_by_id("vCTACOD")
         numCtas = selectCtaRecaudadora.find_elements_by_tag_name('option')
         for cta in numCtas:
-            if str(codCtaRecaudadora) == str(cta.get_attribute("value")):
+            if str(codCtaRecaudadora).split(' ')[0] == str(cta.get_attribute("value")):
                 cta.click()
                 break
         # APLCIAR
@@ -201,8 +201,10 @@ class AtencionAlCliente():
         driver.switch_to.window(popup_window)
         driver.close()
         driver.switch_to.window(first_window)
+        driver.get(_URL+municipio+'/formpagospredio.aspx')
+        ultPago = driver.find_element_by_id('span_CTLPAGOCONS_0001').text
         driverOptions.statusAvalible(noDriver)
-
+        return ultPago
 
     def pazYSalvo(municipio, codRefCatastral):
         noDriver: int = driverOptions.selectAvalibleDriver(municipio)
