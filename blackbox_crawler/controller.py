@@ -153,7 +153,7 @@ class AtencionAlCliente():
             }
             return res
         except:
-            driver.close()s
+            driver.close()
             drivers.pop(noDriver)
             AtencionAlCliente.reciboDePago(municipio, refCatastral)
 
