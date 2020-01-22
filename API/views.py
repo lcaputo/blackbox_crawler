@@ -49,7 +49,13 @@ def ordenPago(request):
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
             res = controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral'].zfill(15))
-            #print(res['codOrdenPago'],' | ',res['vigencia'])
+
+            if res == 'error':
+                return HttpResponse(json.dumps(
+                    'No se encontro Saldo pendiente en los periodos Seleccionados.',
+                    indent=4
+                ), content_type="application/json" )
+
             data['codOrdenPago'] = int(res['codOrdenPago'])
             data['vigencia'] = res['vigencia']
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
@@ -69,6 +75,13 @@ def registrarPago(request):
             data['codRecibo'] = request.POST['codRecibo']
             data['ctaRecaudadora'] = request.POST['ctaRecaudadora']
             res = controller.AtencionAlCliente.registrarPago(data['municipio'], data['refCatastral'], data['codRecibo'], data['ctaRecaudadora'])
+
+            if res == 'error':
+                return HttpResponse(json.dumps(
+                    'Error al registrar el pago.',
+                    indent=4
+                ), content_type="application/json" )
+
             data['ultPago'] = res
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
@@ -85,6 +98,13 @@ def pazYSalvo(request):
             data['municipio'] = request.POST['municipio']
             data['refCatastral'] = request.POST['refCatastral']
             res = controller.AtencionAlCliente.pazYSalvo(data['municipio'], data['refCatastral'])
+
+            if res == 'error':
+                return HttpResponse(json.dumps(
+                    'Error al generar el paz y salvo.',
+                    indent=4
+                ), content_type="application/json" )
+
             data['codPyZ'] = int(res['codPyZ'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
 
