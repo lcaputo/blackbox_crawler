@@ -54,7 +54,7 @@ def ordenPago(request):
                 return HttpResponse(json.dumps(
                     'No se encontro Saldo pendiente en los periodos Seleccionados.',
                     indent=4
-                ), content_type="application/json", status=406)
+                ), content_type="application/json" )
 
             data['codOrdenPago'] = int(res['codOrdenPago'])
             data['vigencia'] = res['vigencia']
