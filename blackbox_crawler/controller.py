@@ -117,42 +117,45 @@ class AtencionAlCliente():
 
 
     def reciboDePago(municipio, refCatastral):
-
         noDriver: int = driverOptions.selectAvalibleDriver(municipio)
 
         driver: webdriver = drivers[noDriver]['driver']
         time.sleep(1)
-        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
+        driver.get(_URL + municipio + '/atn_prd_estadocuenta.aspx')
 
         AtencionAlCliente.fillRefCatastral(driver, municipio, refCatastral)
+        try:
+            btnRecibo = driver.find_element_by_id('BTNRECIBOF_MPAGE')
+            btnRecibo.click()
 
-        btnRecibo = driver.find_element_by_id('BTNRECIBOF_MPAGE')
-        btnRecibo.click()
+            time.sleep(1)
 
-        time.sleep(1)
+            driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
 
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+            btnGenerar = driver.find_element_by_name('BUTTON1')
+            btnGenerar.click()
 
-        btnGenerar = driver.find_element_by_name('BUTTON1')
-        btnGenerar.click()
-
-        time.sleep(1)
-        first_window = driver.window_handles[0]
-        popup_window = driver.window_handles[1]
-        driver.switch_to.window(popup_window)
-        driver.close()
-        driver.switch_to.window(first_window)
-        driver.get(_URL+municipio+'/verfacturaspredio.aspx')
-        codOrdenPago = driver.find_element_by_id('span_FACICOD_0001').text
-        logging.info(codOrdenPago)
-        vigencia = driver.find_element_by_id('span_VGFCOD_0001').text
-        logging.info(vigencia)
-        driverOptions.statusAvalible(noDriver)
-        res = {
-            'codOrdenPago': codOrdenPago,
-            'vigencia': vigencia
-        }
-        return res
+            time.sleep(1)
+            first_window = driver.window_handles[0]
+            popup_window = driver.window_handles[1]
+            driver.switch_to.window(popup_window)
+            driver.close()
+            driver.switch_to.window(first_window)
+            driver.get(_URL + municipio + '/verfacturaspredio.aspx')
+            codOrdenPago = driver.find_element_by_id('span_FACICOD_0001').text
+            logging.info(codOrdenPago)
+            vigencia = driver.find_element_by_id('span_VGFCOD_0001').text
+            logging.info(vigencia)
+            driverOptions.statusAvalible(noDriver)
+            res = {
+                'codOrdenPago': codOrdenPago,
+                'vigencia': vigencia
+            }
+            return res
+        except:
+            driver.close()s
+            drivers.pop(noDriver)
+            AtencionAlCliente.reciboDePago(municipio, refCatastral)
 
 
     def registrarPago(municipio, codRefCatastral, codRecibo, codCtaRecaudadora):
@@ -165,75 +168,87 @@ class AtencionAlCliente():
 
         AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
 
-        btn = driver.find_element_by_id('BTNPAG_MPAGE')
-        btn.click()
+        try:
+            btn = driver.find_element_by_id('BTNPAG_MPAGE')
+            btn.click()
+            time.sleep(1)
+            driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+            time.sleep(1)
+            tabla = driver.find_element_by_id('Grid1ContainerTbl')
+            duplicated_rows = tabla.find_elements_by_tag_name("tr")
+            rows = []
+            for d in range(1, len(duplicated_rows)):
+                r = int(duplicated_rows[d].text.split(' ')[2].split('\n')[1])
+                if r not in rows:
+                    rows.append(r)
+            for i in range(0, len(rows)):
+                # print(rows[i].text.split(' ')[2].split('\n')[1])
+                if int(codRecibo) == int(rows[i]):
+                    checkBoxID = 'IMAGECHK_' + '{:04d}'.format(i + 1)
+                    driver.find_element_by_id(checkBoxID).click()
+                    break
+            # SELECT CUENTA RECAUDADORA
+            selectCtaRecaudadora = driver.find_element_by_id("vCTACOD")
+            numCtas = selectCtaRecaudadora.find_elements_by_tag_name('option')
+            for cta in numCtas:
+                if str(codCtaRecaudadora).split(' ')[0] == str(cta.get_attribute("value")):
+                    cta.click()
+                    break
+            # APLCIAR
+            driver.find_element_by_xpath("//table[@id='TABLE6']//input[@value='APLICAR']").click()
+            time.sleep(1)
+            driver.switch_to.alert.accept()
+            time.sleep(2)
+            first_window = driver.window_handles[0]
+            popup_window = driver.window_handles[1]
+            driver.switch_to.window(popup_window)
+            driver.close()
+            driver.switch_to.window(first_window)
+            driver.get(_URL + municipio + '/formpagospredio.aspx')
+            ultPago = driver.find_element_by_id('span_CTLPAGOCONS_0001').text
+            driverOptions.statusAvalible(noDriver)
+            return ultPago
+        except:
+            driver.close()
+            drivers.pop(noDriver)
+            AtencionAlCliente.registrarPago(municipio, codRefCatastral, codRecibo, codCtaRecaudadora)
 
-        time.sleep(1)
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        time.sleep(1)
-        tabla = driver.find_element_by_id('Grid1ContainerTbl')
-        duplicated_rows = tabla.find_elements_by_tag_name("tr")
-        rows = []
-        for d in range(1, len(duplicated_rows)):
-            r = int(duplicated_rows[d].text.split(' ')[2].split('\n')[1])
-            if r not in rows:
-                rows.append(r)
-        for i in range(0, len(rows)):
-            #print(rows[i].text.split(' ')[2].split('\n')[1])
-            if int(codRecibo) == int(rows[i]):
-                checkBoxID = 'IMAGECHK_' + '{:04d}'.format(i+1)
-                driver.find_element_by_id(checkBoxID).click()
-                break
-        # SELECT CUENTA RECAUDADORA
-        selectCtaRecaudadora = driver.find_element_by_id("vCTACOD")
-        numCtas = selectCtaRecaudadora.find_elements_by_tag_name('option')
-        for cta in numCtas:
-            if str(codCtaRecaudadora).split(' ')[0] == str(cta.get_attribute("value")):
-                cta.click()
-                break
-        # APLCIAR
-        driver.find_element_by_xpath("//table[@id='TABLE6']//input[@value='APLICAR']").click()
-        time.sleep(1)
-        driver.switch_to.alert.accept()
-        time.sleep(2)
-        first_window = driver.window_handles[0]
-        popup_window = driver.window_handles[1]
-        driver.switch_to.window(popup_window)
-        driver.close()
-        driver.switch_to.window(first_window)
-        driver.get(_URL+municipio+'/formpagospredio.aspx')
-        ultPago = driver.find_element_by_id('span_CTLPAGOCONS_0001').text
-        driverOptions.statusAvalible(noDriver)
-        return ultPago
+
 
     def pazYSalvo(municipio, codRefCatastral):
         noDriver: int = driverOptions.selectAvalibleDriver(municipio)
 
         driver: webdriver = drivers[noDriver]['driver']
         time.sleep(1)
-        driver.get(_URL+municipio+'/atn_prd_estadocuenta.aspx')
+        driver.get(_URL + municipio + '/atn_prd_estadocuenta.aspx')
         AtencionAlCliente.fillRefCatastral(driver, municipio, codRefCatastral)
-        btn = driver.find_element_by_id('BTNPYZ_MPAGE')
-        btn.click()
-        time.sleep(1)
-        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-        time.sleep(1)
-        driver.find_element_by_xpath("//table[@id='TABBUT']//input[@value='Emitir Paz y Salvo']").click()
-        time.sleep(2)
-        first_window = driver.window_handles[0]
-        popup_window = driver.window_handles[1]
-        driver.switch_to.window(popup_window)
-        driver.close()
-        driver.switch_to.window(first_window)
-        #
-        driver.get(_URL + municipio + '/verpyz.aspx')
-        codPyZ = driver.find_element_by_id('span_PYZVISCOD_0001').text
-        logging.info(codPyZ)
-        driverOptions.statusAvalible(noDriver)
-        res = {
-            'codPyZ': codPyZ
-        }
-        return res
+        try:
+            btn = driver.find_element_by_id('BTNPYZ_MPAGE')
+            btn.click()
+            time.sleep(1)
+            driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+            time.sleep(1)
+            driver.find_element_by_xpath("//table[@id='TABBUT']//input[@value='Emitir Paz y Salvo']").click()
+            time.sleep(2)
+            first_window = driver.window_handles[0]
+            popup_window = driver.window_handles[1]
+            driver.switch_to.window(popup_window)
+            driver.close()
+            driver.switch_to.window(first_window)
+            #
+            driver.get(_URL + municipio + '/verpyz.aspx')
+            codPyZ = driver.find_element_by_id('span_PYZVISCOD_0001').text
+            logging.info(codPyZ)
+            driverOptions.statusAvalible(noDriver)
+            res = {
+                'codPyZ': codPyZ
+            }
+            return res
+        except:
+            driver.close()
+            drivers.pop(noDriver)
+            AtencionAlCliente.pazYSalvo(municipio, codRefCatastral)
+
 
 if __name__ == '__main__':
     """ WEBDRIVER CONNECTION """
