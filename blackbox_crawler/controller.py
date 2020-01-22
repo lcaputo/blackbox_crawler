@@ -144,6 +144,7 @@ class AtencionAlCliente():
         try:
             popup_window = driver.window_handles[1]
         except:
+            driverOptions.statusAvalible(noDriver)
             return 'error'
         driver.switch_to.window(popup_window)
         driver.close()
@@ -211,6 +212,7 @@ class AtencionAlCliente():
             first_window = driver.window_handles[0]
             popup_window = driver.window_handles[1]
         except:
+            driverOptions.statusAvalible(noDriver)
             return 'error'
 
         driver.switch_to.window(popup_window)
@@ -247,6 +249,7 @@ class AtencionAlCliente():
         try:
             popup_window = driver.window_handles[1]
         except:
+            driverOptions.statusAvalible(noDriver)
             return 'error'
         driver.switch_to.window(popup_window)
         driver.close()
