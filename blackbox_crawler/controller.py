@@ -7,6 +7,7 @@ import requests, logging, threading
 from multiprocessing.pool import ThreadPool
 
 _URL = 'http://192.168.0.250/'
+
 #downloadFolder = r''+os.getcwd()+'\Downloads\\'
 executor = ThreadPool()
 logging.basicConfig( level=logging.DEBUG, format="%(threadName)s|%(message)s" )
@@ -266,5 +267,3 @@ class AtencionAlCliente():
 
 
 if __name__ == '__main__':
-    """ WEBDRIVER CONNECTION """
-    #driver.implicitly_wait(10)
