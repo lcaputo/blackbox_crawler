@@ -54,7 +54,7 @@ def ordenPago(request):
                 return HttpResponse(json.dumps(
                     'No se encontro Saldo pendiente en los periodos Seleccionados.',
                     indent=4
-                ), content_type="application/json" )
+                ), content_type="application/json", status=406)
 
             data['codOrdenPago'] = int(res['codOrdenPago'])
             data['vigencia'] = res['vigencia']
@@ -80,7 +80,7 @@ def registrarPago(request):
                 return HttpResponse(json.dumps(
                     'Error al registrar el pago.',
                     indent=4
-                ), content_type="application/json" )
+                ), content_type="application/json", status=406)
 
             data['ultPago'] = res
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
@@ -103,7 +103,7 @@ def pazYSalvo(request):
                 return HttpResponse(json.dumps(
                     'Error al generar el paz y salvo.',
                     indent=4
-                ), content_type="application/json" )
+                ), content_type="application/json", status=406)
 
             data['codPyZ'] = int(res['codPyZ'])
             return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
