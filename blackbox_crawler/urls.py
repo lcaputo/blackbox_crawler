@@ -23,4 +23,5 @@ urlpatterns = [
     path('orden_pago', views.ordenPago),
     path('registro_pagos', views.registrarPago),
     path('paz_y_salvo', views.pazYSalvo),
+    path('orden_pago_xvigencia', views.ordenDePagoPorVigencia),
 ]

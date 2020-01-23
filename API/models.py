@@ -11,6 +11,13 @@ class AtencionAlCliente(forms.Form):
     municipio = forms.CharField()
     refCatastral = forms.IntegerField()
 
+
+class OrdenDePagoPorVigencia(forms.Form):
+    municipio = forms.CharField()
+    refCatastral = forms.IntegerField()
+    vigencia_inicial = forms.IntegerField()
+
+
 class RegistrarPago(forms.Form):
     municipio = forms.CharField()
     refCatastral = forms.IntegerField()

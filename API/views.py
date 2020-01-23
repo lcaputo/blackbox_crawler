@@ -15,7 +15,7 @@ import threading, queue
 from blackbox_crawler import controller
 
 # Model
-from .models import Novedad, AtencionAlCliente, RegistrarPago
+from .models import Novedad, AtencionAlCliente, RegistrarPago, OrdenDePagoPorVigencia
 
 # Create your views here.
 """ LOGIN """
@@ -50,6 +50,31 @@ def ordenPago(request):
             data['refCatastral'] = request.POST['refCatastral']
             res = controller.AtencionAlCliente.reciboDePago(data['municipio'], data['refCatastral'].zfill(15))
 
+            if res == 'error':
+                return HttpResponse(json.dumps(
+                    'No se encontro Saldo pendiente en los periodos Seleccionados.',
+                    indent=4
+                ), content_type="application/json", status=406)
+
+            data['codOrdenPago'] = int(res['codOrdenPago'])
+            data['vigencia'] = res['vigencia']
+            return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+
+
+@csrf_exempt
+def ordenDePagoPorVigencia(request):
+    if request.method == 'POST':
+        form = OrdenDePagoPorVigencia(request.POST)
+        data = {}
+        if not form.is_valid():
+            data['error'] = 'error faltan datos'
+            return HttpResponse(json.dumps(data, indent=4), content_type="application/json")
+        else:
+            data['municipio'] = request.POST['municipio']
+            data['refCatastral'] = request.POST['refCatastral']
+            data['vigencia_inicial'] = request.POST['vigencia_inicial']
+            data['vigencia_final'] = request.POST['vigencia_final']
+            res = controller.AtencionAlCliente.reciboDePagoPorVigencia(data['municipio'], data['refCatastral'].zfill(15), data['vigencia_inicial'])
             if res == 'error':
                 return HttpResponse(json.dumps(
                     'No se encontro Saldo pendiente en los periodos Seleccionados.',

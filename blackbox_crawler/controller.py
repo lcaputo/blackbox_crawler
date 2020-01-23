@@ -163,6 +163,55 @@ class AtencionAlCliente():
         return res
 
 
+    def reciboDePagoPorVigencia(municipio, refCatastral, vigencia_inicial):
+        noDriver: int = driverOptions.selectAvalibleDriver(municipio)
+
+        driver: webdriver = drivers[noDriver]['driver']
+        time.sleep(1)
+
+        try:
+            driver.get(_URL + municipio + '/atn_prd_estadocuenta.aspx')
+            AtencionAlCliente.fillRefCatastral(driver, municipio, refCatastral)
+        except:
+            driver.close()
+            drivers.pop(noDriver)
+            AtencionAlCliente.reciboDePago(municipio, refCatastral)
+
+        btnRecibo = driver.find_element_by_id('BTNRECIBOF_MPAGE')
+        btnRecibo.click()
+
+        time.sleep(1)
+
+        driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+
+        txtVigenciaInicial = driver.find_element_by_id('vINIVIGCOD')
+        txtVigenciaInicial.send_keys(vigencia_inicial)
+
+        driver.find_element_by_name('BUTTON1').click()
+
+        time.sleep(1)
+        first_window = driver.window_handles[0]
+        try:
+            popup_window = driver.window_handles[1]
+        except:
+            driverOptions.statusAvalible(noDriver)
+            return 'error'
+        driver.switch_to.window(popup_window)
+        driver.close()
+        driver.switch_to.window(first_window)
+        driver.get(_URL + municipio + '/verfacturaspredio.aspx')
+        codOrdenPago = driver.find_element_by_id('span_FACICOD_0001').text
+        logging.info(codOrdenPago)
+        vigencia = driver.find_element_by_id('span_VGFCOD_0001').text
+        logging.info(vigencia)
+        driverOptions.statusAvalible(noDriver)
+        res = {
+            'codOrdenPago': codOrdenPago,
+            'vigencia': vigencia
+        }
+        return res
+
+
     def registrarPago(municipio, codRefCatastral, codRecibo, codCtaRecaudadora):
 
         noDriver: int = driverOptions.selectAvalibleDriver(municipio)
@@ -264,6 +313,3 @@ class AtencionAlCliente():
             'codPyZ': codPyZ
         }
         return res
-
-
-if __name__ == '__main__':
